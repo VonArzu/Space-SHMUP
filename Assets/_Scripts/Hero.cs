@@ -16,6 +16,7 @@ public class Hero : MonoBehaviour {
 
 
 
+
     void Awake () {
 		if(S == null)
         {
