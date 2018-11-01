@@ -2,12 +2,64 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Enemy : MonoBehaviour {
-    [Header("Set in Inspector: Enemy")]
-    public float speed = 10f;
-    public float fireRate = 0.3f;
+
+public class Enemy : MonoBehaviour
+{
+
+    public float speed = 10f; 
+    public float fireRate = 0.3f; 
     public float health = 10;
-    public int   score = 100;
+    public int score = 100;
+
+    public int showDamageForFrame = 2; 
+    public float powerUpDropChance = 1f; 
+    public bool _________________;
+
+    public Bounds bounds;
+    public Vector3 boundsCenterOffset; 
+    public Color[] originalColors;
+    public Material[] materials;
+    public int remainingDamageFrames = 0; 
+
+
+    void Awake()
+    {
+        materials = Utils.GetAllMaterials(gameObject);
+        originalColors = new Color[materials.Length];
+
+        for (int i = 0; i < materials.Length; i++)
+        {
+            originalColors[i] = materials[i].color;
+        }
+        InvokeRepeating("CheckOffscreen", 0f, 2f);
+
+    }
+
+
+    void Start() { }
+    void Update()
+    {
+
+        Move();
+
+        if (remainingDamageFrames > 0)
+
+        {
+            remainingDamageFrames--;    
+            if (remainingDamageFrames == 0)
+
+            {
+                UnShowDamage();
+            }
+        }
+    }
+
+    public virtual void Move()
+    {
+        Vector3 tempPos = pos;
+        tempPos.y -= speed * Time.deltaTime;
+        pos = tempPos;
+    }
 
     public Vector3 pos
     {
@@ -20,31 +72,65 @@ public class Enemy : MonoBehaviour {
             this.transform.position = value;
         }
     }
-    private BoundsCheck bndCheck;
-    void Awake()
+    void CheckOffscreen()
     {
-        bndCheck = GetComponent<BoundsCheck>();
-    }
-
-    void Update () {
-        Move();
-    if(bndCheck !=null && bndCheck.offDown)
+        if (bounds.size == Vector3.zero)
         {
-            Destroy(gameObject);
+            bounds = Utils.CombineBoundsOfChildren(this.gameObject);
+            boundsCenterOffset = bounds.center - transform.position;
         }
 
-    {
-        if(pos.y < bndCheck.camHeight - bndCheck.radius)
-            {
-                Destroy(gameObject);
-            }
-    }
-	}
+        bounds.center = transform.position + boundsCenterOffset;
+        Vector3 off = Utils.ScreenBoundsCheck(bounds, BoundsTest.offScreen);
 
-    public virtual void Move()
+        if (off != Vector3.zero)
+        {
+            if (off.y < 0)
+            {
+               Destroy(this.gameObject);
+            }
+        }
+    }
+    void OnCollisionEnter(Collision coll)
     {
-        Vector3 tempPos = pos;
-        tempPos.y -= speed * Time.deltaTime;
-        pos = tempPos;
+        GameObject other = coll.gameObject;
+        switch (other.tag)
+        {
+           case "ProjectileHero":
+                Projectile p = other.GetComponent<Projectile>();
+                bounds.center = transform.position + boundsCenterOffset;
+                if (bounds.extents == Vector3.zero || Utils.ScreenBoundsCheck(bounds, BoundsTest.offScreen) != Vector3.zero)
+
+                {
+                    Destroy(other);
+                    break;
+                }
+                ShowDamage();
+                health -= Main.W_DEFS[p.type].damageOnHit;
+                if (health <= 0)
+                {                   
+                    Main.S.ShipDestroyed(this);        
+                    Destroy(this.gameObject);
+                }
+                Destroy(other);
+                break;
+        }
+    }
+
+    void ShowDamage()
+
+    {
+        foreach (Material m in materials)
+        {
+           m.color = Color.red;
+        }
+        remainingDamageFrames = showDamageForFrame;
+    }
+    void UnShowDamage()
+    {
+        for (int i = 0; i < materials.Length; i++)
+        {
+            materials[i].color = originalColors[i];    
+        }
     }
 }
