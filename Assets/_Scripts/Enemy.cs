@@ -15,6 +15,7 @@ public class Enemy : MonoBehaviour
     public float powerUpDropChance = 1f; 
     public bool _________________;
 
+    //protected BoundsCheck bndCheck;
     public Bounds bounds;
     public Vector3 boundsCenterOffset; 
     public Color[] originalColors;
