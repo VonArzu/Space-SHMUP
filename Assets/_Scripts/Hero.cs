@@ -20,8 +20,11 @@ public class Hero : MonoBehaviour
     [Header("Set Dynamically")]
     [SerializeField]
     private float _shieldLevel = 1;
+
     private GameObject lastTriggerGo = null;
+
     public delegate void WeaponFireDelegate();
+
     public WeaponFireDelegate fireDelegate;
 
     void Start()

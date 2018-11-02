@@ -72,8 +72,7 @@ public class Weapon : MonoBehaviour
         }
         Projectile p;
         Vector3 vel = Vector3.up * def.velocity;
-        if (transform.up.y < 0)
-        {
+        if (transform.up.y < 0) {
             vel.y = -vel.y;
         }
         switch (type)
@@ -96,8 +95,6 @@ public class Weapon : MonoBehaviour
 
         }
     }
-
-
     public Projectile MakeProjectile()
     {
         GameObject go = Instantiate<GameObject>(def.projectilePrefab);

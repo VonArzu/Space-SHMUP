@@ -15,7 +15,7 @@ public class Enemy : MonoBehaviour
     public float powerUpDropChance = 1f; 
     public bool _________________;
 
-    //protected BoundsCheck bndCheck;
+    protected BoundsCheck bndCheck;
     public Bounds bounds;
     public Vector3 boundsCenterOffset; 
     public Color[] originalColors;
@@ -82,11 +82,11 @@ public class Enemy : MonoBehaviour
         }
 
         bounds.center = transform.position + boundsCenterOffset;
-        Vector3 off = Utils.ScreenBoundsCheck(bounds, BoundsTest.offScreen);
+       Vector3 off = Utils.ScreenBoundsCheck(bounds, BoundsTest.offScreen);
 
-        if (off != Vector3.zero)
+      if (off != Vector3.zero)
         {
-            if (off.y < 0)
+           if (off.y < 0)
             {
                Destroy(this.gameObject);
             }
@@ -100,17 +100,17 @@ public class Enemy : MonoBehaviour
            case "ProjectileHero":
                 Projectile p = other.GetComponent<Projectile>();
                 bounds.center = transform.position + boundsCenterOffset;
-                if (bounds.extents == Vector3.zero || Utils.ScreenBoundsCheck(bounds, BoundsTest.offScreen) != Vector3.zero)
+               if (bounds.extents == Vector3.zero || Utils.ScreenBoundsCheck(bounds, BoundsTest.offScreen) != Vector3.zero)
 
                 {
                     Destroy(other);
                     break;
                 }
                 ShowDamage();
-                health -= Main.W_DEFS[p.type].damageOnHit;
+               health -= Main.W_DEFS[p.type].damageOnHit;
                 if (health <= 0)
                 {                   
-                    Main.S.ShipDestroyed(this);        
+                   Main.S.ShipDestroyed(this);        
                     Destroy(this.gameObject);
                 }
                 Destroy(other);

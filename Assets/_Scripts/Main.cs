@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+//using UnityEngine UI;
 using UnityEngine.SceneManagement;
 
 public class Main : MonoBehaviour
@@ -13,6 +14,8 @@ public class Main : MonoBehaviour
     public float enemySpawnPerSecond = 0.5f;
     public float enemyDefaultPadding = 1.5f;
     public WeaponDefinition[] weaponDefinitions;
+    public GameObject prefabPowerUp;
+    //public Text uit;
     private BoundsCheck bndCheck;
 
     void Awake()

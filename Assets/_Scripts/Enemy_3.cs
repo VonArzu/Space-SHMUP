@@ -16,11 +16,11 @@ public class Enemy_3 : Enemy
         points = new Vector3[3];
         points[0] = pos;
 
-        float xMin = -bndCheck.camWidth + bndCheck.radius;
-        float xMax = bndCheck.camWidth - bndCheck.radius;
+       // float xMin = -bndCheck.camWidth + bndCheck.radius;
+        //float xMax = bndCheck.camWidth - bndCheck.radius;
         Vector3 v;
         v = Vector3.zero; 
-        v.x = Random.Range(xMin, xMax);
+        //v.x = Random.Range(xMin, xMax);
         points[2] = v;
 
         birthTime = Time.time;
