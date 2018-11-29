@@ -1,27 +1,53 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-//using UnityEngine UI;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class Main : MonoBehaviour
 {
-    static public Main S;
+    static public Main S; 
     static Dictionary<WeaponType, WeaponDefinition> WEAP_DICT;
 
     [Header("Set in Inspector")]
-    public GameObject[] prefabEnemies;
-    public float enemySpawnPerSecond = 0.5f;
-    public float enemyDefaultPadding = 1.5f;
+    public GameObject[] prefabEnemies; 
+    public float enemySpawnPerSecond = 0.5f; 
+    public float enemyDefaultPadding = 1.5f; 
     public WeaponDefinition[] weaponDefinitions;
     public GameObject prefabPowerUp;
-    //public Text uit;
+    public Text uitLevel; 
+    public Text uitScore; 
+    public WeaponType[] powerUpFrequency = new WeaponType[] {
+        WeaponType.blaster, WeaponType.blaster, WeaponType.spread, WeaponType.shield
+    };
+
     private BoundsCheck bndCheck;
+
+    [Header("Set Dynamically")]
+    public int level;
+    public int Totalscore;
+
+    public void shipDestroyed(Enemy e)
+    {
+
+        if (Random.value <= e.powerUpDropChance)
+        { 
+            int ndx = Random.Range(0, powerUpFrequency.Length);
+            WeaponType puType = powerUpFrequency[ndx];
+
+            GameObject go = Instantiate(prefabPowerUp) as GameObject;
+            PowerUp pu = go.GetComponent<PowerUp>();
+
+            pu.SetType(puType); 
+            pu.transform.position = e.transform.position;
+        }
+    }
 
     void Awake()
     {
         S = this;
         bndCheck = GetComponent<BoundsCheck>();
+
         Invoke("SpawnEnemy", 1f / enemySpawnPerSecond);
 
         WEAP_DICT = new Dictionary<WeaponType, WeaponDefinition>();
@@ -41,31 +67,48 @@ public class Main : MonoBehaviour
         {
             enemyPadding = Mathf.Abs(go.GetComponent<BoundsCheck>().radius);
         }
+
         Vector3 pos = Vector3.zero;
         float xMin = -bndCheck.camWidth + enemyPadding;
         float xMax = bndCheck.camWidth - enemyPadding;
         pos.x = Random.Range(xMin, xMax);
         pos.y = bndCheck.camHeight + enemyPadding;
         go.transform.position = pos;
- 
+
+      
         Invoke("SpawnEnemy", 1f / enemySpawnPerSecond);
     }
+
     public void DelayedRestart(float delay)
     {
+        
         Invoke("Restart", delay);
     }
+
     public void Restart()
     {
+      
         SceneManager.LoadScene("_Scene_0");
-    }
+        Totalscore = 0;
+        level = 1;
 
+    }
+ 
     static public WeaponDefinition GetWeaponDefinition(WeaponType wt)
     {
-
+     
         if (WEAP_DICT.ContainsKey(wt))
         {
             return (WEAP_DICT[wt]);
         }
-        return (new WeaponDefinition());
+      
+        return (new WeaponDefinition()); 
+    }
+
+    public void UpdateGUI()
+    {
+        Totalscore += 100;
+        uitLevel.text = "Level: " + level + " of 4";
+        uitScore.text = "Score: " + Totalscore;
     }
 }
