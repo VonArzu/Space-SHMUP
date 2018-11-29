@@ -2,15 +2,17 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Projectile : MonoBehaviour{
+public class Projectile : MonoBehaviour
+{
+
     private BoundsCheck bndCheck;
     private Renderer rend;
 
     [Header("Set Dynamically")]
     public Rigidbody rigid;
+
     [SerializeField]
     private WeaponType _type;
-
     public WeaponType type
     {
         get
@@ -22,6 +24,7 @@ public class Projectile : MonoBehaviour{
             SetType(value);
         }
     }
+
     void Awake()
     {
         bndCheck = GetComponent<BoundsCheck>();
@@ -36,8 +39,10 @@ public class Projectile : MonoBehaviour{
             Destroy(gameObject);
         }
     }
+    
     public void SetType(WeaponType eType)
     {
+        // Set the _type
         _type = eType;
         WeaponDefinition def = Main.GetWeaponDefinition(_type);
         rend.material.color = def.projectileColor;

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
+    public class BoundsCheck : MonoBehaviour
     {
         [Header("Set in Inspector")]
         public float radius = 1f;
