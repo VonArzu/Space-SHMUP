@@ -2,66 +2,25 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-
 public class Enemy : MonoBehaviour
 {
 
+    [Header("Set in Inspector: Enemy")]
     public float speed = 10f; 
     public float fireRate = 0.3f; 
     public float health = 10;
-    public int score = 100;
-
-    public int showDamageForFrame = 2; 
+    public int score = 100; 
+    public float showDamageDuration = 0.1f; 
     public float powerUpDropChance = 1f; 
-    public bool _________________;
 
-    protected BoundsCheck bndCheck;
-    public Bounds bounds;
-    public Vector3 boundsCenterOffset; 
+    [Header("Set Dynamically: Enemy")]
     public Color[] originalColors;
     public Material[] materials;
-    public int remainingDamageFrames = 0; 
+    public bool showingDamage = false;
+    public float damageDoneTime; 
+    public bool notifiedOfDestruction = false; 
 
-
-    void Awake()
-    {
-        materials = Utils.GetAllMaterials(gameObject);
-        originalColors = new Color[materials.Length];
-
-        for (int i = 0; i < materials.Length; i++)
-        {
-            originalColors[i] = materials[i].color;
-        }
-        InvokeRepeating("CheckOffscreen", 0f, 2f);
-
-    }
-
-
-    void Start() { }
-    void Update()
-    {
-
-        Move();
-
-        if (remainingDamageFrames > 0)
-
-        {
-            remainingDamageFrames--;    
-            if (remainingDamageFrames == 0)
-
-            {
-                UnShowDamage();
-            }
-        }
-    }
-
-    public virtual void Move()
-    {
-        Vector3 tempPos = pos;
-        tempPos.y -= speed * Time.deltaTime;
-        pos = tempPos;
-    }
-
+    protected BoundsCheck bndCheck;
     public Vector3 pos
     {
         get
@@ -73,65 +32,100 @@ public class Enemy : MonoBehaviour
             this.transform.position = value;
         }
     }
-    void CheckOffscreen()
+
+    void Awake()
     {
-        if (bounds.size == Vector3.zero)
+        bndCheck = GetComponent<BoundsCheck>();
+        materials = Utils.GetAllMaterials(gameObject);
+        originalColors = new Color[materials.Length];
+        for (int i = 0; i < materials.Length; i++)
         {
-            bounds = Utils.CombineBoundsOfChildren(this.gameObject);
-            boundsCenterOffset = bounds.center - transform.position;
-        }
-
-        bounds.center = transform.position + boundsCenterOffset;
-       Vector3 off = Utils.ScreenBoundsCheck(bounds, BoundsTest.offScreen);
-
-      if (off != Vector3.zero)
-        {
-           if (off.y < 0)
-            {
-               Destroy(this.gameObject);
-            }
+            originalColors[i] = materials[i].color;
         }
     }
+
+    void Update()
+    {
+        Move();
+
+        if (showingDamage && Time.time > damageDoneTime)
+        {
+            UnShowDamage();
+        }
+
+        if (bndCheck != null && bndCheck.offDown)
+        {
+            Destroy(gameObject);
+        }
+    }
+
+    public virtual void Move()
+    {
+        Vector3 tempPos = pos;
+        tempPos.y -= speed * Time.deltaTime;
+        pos = tempPos;
+    }
+
     void OnCollisionEnter(Collision coll)
     {
-        GameObject other = coll.gameObject;
-        switch (other.tag)
-        {
-           case "ProjectileHero":
-                Projectile p = other.GetComponent<Projectile>();
-                bounds.center = transform.position + boundsCenterOffset;
-               if (bounds.extents == Vector3.zero || Utils.ScreenBoundsCheck(bounds, BoundsTest.offScreen) != Vector3.zero)
+        GameObject otherGO = coll.gameObject;
 
+        switch (otherGO.tag)
+        {
+            case "ProjectileHero":
+                Projectile p = otherGO.GetComponent<Projectile>();
+
+                if (!bndCheck.isOnScreen)
                 {
-                    Destroy(other);
+                    Destroy(otherGO);
                     break;
                 }
+
                 ShowDamage();
-               health -= Main.W_DEFS[p.type].damageOnHit;
+                health -= Main.GetWeaponDefinition(p.type).damageOnHit;
+
                 if (health <= 0)
-                {                   
-                   Main.S.ShipDestroyed(this);        
+                {
+
+                    if (!notifiedOfDestruction)
+                    {
+                        Main.S.shipDestroyed(this);
+                    }
+
+                    notifiedOfDestruction = true;
+
                     Destroy(this.gameObject);
+                    Main.S.UpdateGUI();
+
                 }
-                Destroy(other);
+
+                Destroy(otherGO);
+                break;
+
+            default:
+                print("Enemy hit by non-ProjectileHero: " + otherGO.name);
                 break;
         }
     }
 
     void ShowDamage()
-
     {
         foreach (Material m in materials)
         {
-           m.color = Color.red;
+            m.color = Color.red;
         }
-        remainingDamageFrames = showDamageForFrame;
+
+        showingDamage = true;
+        damageDoneTime = Time.time + showDamageDuration;
     }
+
     void UnShowDamage()
     {
         for (int i = 0; i < materials.Length; i++)
         {
-            materials[i].color = originalColors[i];    
+            materials[i].color = originalColors[i];
         }
+        showingDamage = false;
     }
+
 }
